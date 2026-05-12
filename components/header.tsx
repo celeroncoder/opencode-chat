@@ -11,13 +11,16 @@ export function Header({ className }: { className?: string }) {
 
   return (
     <header
-      className={cn("flex items-center gap-2 p-2 px-4 sm:p-4", className)}
+      className={cn(
+        "pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center gap-2 py-2 px-4 sm:p-4",
+        className,
+      )}
     >
       <button
         type="button"
         onClick={toggleSidebar}
         aria-label="Toggle Sidebar"
-        className="px-2 py-2 text-muted-foreground transition-colors hover:text-foreground"
+        className="pointer-events-auto rounded-full border-2 border-border bg-muted/70 p-1 px-2 py-2 text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
       >
         <HugeiconsIcon icon={MenuTwoLineIcon} size={24} strokeWidth={2} />
       </button>

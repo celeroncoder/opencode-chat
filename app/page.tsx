@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <>
       <Header />
-      <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-2xl flex-col items-center justify-end gap-8 px-4 pb-2">
+      <div className="mx-auto flex min-h-[calc(100vh-16px)] w-full max-w-2xl flex-col items-center justify-end gap-8 px-4 pb-2">
         <PromptInput
           autoFocus
           value={input}

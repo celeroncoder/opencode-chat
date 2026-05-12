@@ -1,6 +1,14 @@
 import { auth } from "@clerk/nextjs/server";
 import { createId } from "@paralleldrive/cuid2";
-import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  generateObject,
+  stepCountIs,
+  streamText,
+  type UIMessage,
+} from "ai";
+import { eq } from "drizzle-orm";
+import * as z from "zod";
 
 import { getModel, DEFAULT_MODEL_ID, type ModelId } from "@/lib/ai";
 import { searchTool, scrapeTool } from "@/lib/tools";
@@ -39,6 +47,13 @@ export async function POST(req: Request) {
     return new Response("expected user message", { status: 400 });
   }
 
+  const previousBefore = await loadSessionMessages({
+    sessionId,
+    nucleusId,
+    authId,
+  });
+  const isFirstUserMessage = !previousBefore.some((m) => m.role === "user");
+
   await saveSingleMessage(sessionId, message);
   await deleteMessagesAfter(sessionId, message.id);
 
@@ -50,6 +65,38 @@ export async function POST(req: Request) {
   const allMessages: UIMessage[] = previous.some((m) => m.id === message.id)
     ? previous
     : [...previous, message];
+
+  if (isFirstUserMessage) {
+    const userText = (message.parts ?? [])
+      .filter((p): p is { type: "text"; text: string } => p.type === "text")
+      .map((p) => p.text)
+      .join("\n")
+      .trim();
+
+    if (userText) {
+      void generateObject({
+        model: getModel("deepseek-v4-flash"),
+        schema: z.object({
+          title: z
+            .string()
+            .max(60)
+            .describe("A concise 3-6 word title for this chat."),
+        }),
+        prompt: `Generate a concise, descriptive title (3-6 words, no quotes, no trailing punctuation) for a chat that starts with this user message. Respond as JSON matching the schema { "title": string }.\n\nUser message:\n${userText}`,
+      })
+        .then(async ({ object }) => {
+          const title = object.title.trim().slice(0, 255);
+          if (!title) return;
+          await db
+            .update(chatSessions)
+            .set({ title })
+            .where(eq(chatSessions.id, sessionId));
+        })
+        .catch((err) => {
+          console.error("[chat] title generation failed", err);
+        });
+    }
+  }
 
   const result = streamText({
     model: getModel(model ?? DEFAULT_MODEL_ID),
