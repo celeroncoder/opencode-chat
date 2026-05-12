@@ -4,7 +4,8 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { DEFAULT_MODEL_ID, models, type ModelId } from "@/lib/models";
+import { PromptInput } from "@/components/prompt-input";
+import { DEFAULT_MODEL_ID, type ModelId } from "@/lib/models";
 
 export function Chat({
   id,
@@ -60,28 +61,10 @@ export function Chat({
     }
   }, [id, sendMessage]);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const text = input.trim();
-    if (!text) return;
-    sendMessage({ text });
-    setInput("");
-  }
-
   const busy = status === "streaming" || status === "submitted";
 
   return (
     <div>
-      <select
-        value={model}
-        onChange={(e) => setModel(e.target.value as ModelId)}
-      >
-        {models.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.name}
-          </option>
-        ))}
-      </select>
       <div>
         {messages.map((m) => (
           <div key={m.id}>
@@ -105,17 +88,19 @@ export function Chat({
           </div>
         ) : null}
       </div>
-      <form onSubmit={handleSubmit}>
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          rows={3}
-          disabled={busy}
-        />
-        <button type="submit" disabled={busy}>
-          Send
-        </button>
-      </form>
+      <PromptInput
+        value={input}
+        onValueChange={setInput}
+        onSubmit={() => {
+          const text = input.trim();
+          if (!text) return;
+          sendMessage({ text });
+          setInput("");
+        }}
+        model={model}
+        onModelChange={setModel}
+        busy={busy}
+      />
       <div>status: {status}</div>
     </div>
   );

@@ -4,15 +4,15 @@ import { createId } from "@paralleldrive/cuid2";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { DEFAULT_MODEL_ID, models, type ModelId } from "@/lib/models";
+import { PromptInput } from "@/components/prompt-input";
+import { DEFAULT_MODEL_ID, type ModelId } from "@/lib/models";
 
 export default function Home() {
   const router = useRouter();
   const [input, setInput] = useState("");
   const [model, setModel] = useState<ModelId>(DEFAULT_MODEL_ID);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function submit() {
     const text = input.trim();
     if (!text) return;
     const id = createId();
@@ -21,22 +21,15 @@ export default function Home() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <select value={model} onChange={(e) => setModel(e.target.value as ModelId)}>
-        {models.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.name}
-          </option>
-        ))}
-      </select>
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Type a message..."
-        rows={4}
+    <div className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-2xl flex-col items-center justify-center gap-8 px-4">
+      <PromptInput
         autoFocus
+        value={input}
+        onValueChange={setInput}
+        onSubmit={submit}
+        model={model}
+        onModelChange={setModel}
       />
-      <button type="submit">Send</button>
-    </form>
+    </div>
   );
 }

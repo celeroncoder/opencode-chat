@@ -33,4 +33,4 @@ export const models: ModelEntry[] = [
   { id: "qwen3.5-plus", name: "Qwen3.5 Plus", provider: "alibaba" },
 ];
 
-export const DEFAULT_MODEL_ID: ModelId = "glm-5.1";
+export const DEFAULT_MODEL_ID: ModelId = "deepseek-v4-flash";
