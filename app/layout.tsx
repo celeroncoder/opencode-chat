@@ -80,27 +80,30 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-          <TooltipProvider>
-            <Show when="signed-out">
-              <header className="flex items-center justify-end gap-2 p-4">
+            <TooltipProvider>
+              <Show when="signed-out">
+                {/* <header className="flex items-center justify-end gap-2 p-4">
                 <SignInButton />
                 <SignUpButton />
-              </header>
-              {children}
-            </Show>
-            <Show when="signed-in">
-              <SidebarProvider>
-                <AppSidebar
-                  sessions={sessions.map((s) => ({ id: s.id, title: s.title }))}
-                />
-                <SidebarInset>
-                  <main className="flex-1 flex flex-col min-h-0">
-                    {children}
-                  </main>
-                </SidebarInset>
-              </SidebarProvider>
-            </Show>
-          </TooltipProvider>
+              </header> */}
+                {children}
+              </Show>
+              <Show when="signed-in">
+                <SidebarProvider>
+                  <AppSidebar
+                    sessions={sessions.map((s) => ({
+                      id: s.id,
+                      title: s.title,
+                    }))}
+                  />
+                  <SidebarInset>
+                    <main className="flex-1 flex flex-col min-h-0">
+                      {children}
+                    </main>
+                  </SidebarInset>
+                </SidebarProvider>
+              </Show>
+            </TooltipProvider>
           </ThemeProvider>
         </ClerkProvider>
       </body>
