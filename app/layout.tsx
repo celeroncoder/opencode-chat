@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/app-sidebar";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const figtreeHeading = Figtree({
   subsets: ["latin"],
@@ -59,6 +60,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         "h-full",
         "antialiased",
@@ -72,6 +74,12 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <ServiceWorkerRegister />
         <ClerkProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
           <TooltipProvider>
             <Show when="signed-out">
               <header className="flex items-center justify-end gap-2 p-4">
@@ -93,6 +101,7 @@ export default async function RootLayout({
               </SidebarProvider>
             </Show>
           </TooltipProvider>
+          </ThemeProvider>
         </ClerkProvider>
       </body>
     </html>

@@ -5,9 +5,14 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowDataTransferVerticalIcon,
   Logout03Icon,
+  Moon02Icon,
+  Sun03Icon,
   UserSettings01Icon,
 } from "@hugeicons/core-free-icons";
 import Link from "next/link";
+import { useTheme } from "next-themes";
+import { flushSync } from "react-dom";
+import { useRef } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -29,6 +34,51 @@ export function NavUser() {
   const { isMobile } = useSidebar();
   const { user } = useUser();
   const { signOut } = useClerk();
+  const { resolvedTheme, setTheme } = useTheme();
+  const themeItemRef = useRef<HTMLDivElement>(null);
+
+  const isDark = resolvedTheme === "dark";
+
+  const toggleTheme = async () => {
+    const next = isDark ? "light" : "dark";
+    const doc = document as Document & {
+      startViewTransition?: (cb: () => void) => { ready: Promise<void> };
+    };
+
+    if (!doc.startViewTransition || !themeItemRef.current) {
+      setTheme(next);
+      return;
+    }
+
+    const transition = doc.startViewTransition(() => {
+      flushSync(() => setTheme(next));
+    });
+
+    await transition.ready;
+
+    const { top, left, width, height } =
+      themeItemRef.current.getBoundingClientRect();
+    const x = left + width / 2;
+    const y = top + height / 2;
+    const maxRadius = Math.hypot(
+      Math.max(left, window.innerWidth - left),
+      Math.max(top, window.innerHeight - top),
+    );
+
+    document.documentElement.animate(
+      {
+        clipPath: [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${maxRadius}px at ${x}px ${y}px)`,
+        ],
+      },
+      {
+        duration: 600,
+        easing: "ease-in-out",
+        pseudoElement: "::view-transition-new(root)",
+      },
+    );
+  };
 
   const fullName = user?.fullName ?? "Account";
   const email = user?.primaryEmailAddress?.emailAddress ?? "";
@@ -92,6 +142,16 @@ export function NavUser() {
                 <HugeiconsIcon icon={UserSettings01Icon} className="size-4" />
                 Account
               </Link>
+            </ResponsiveDropdownMenuItem>
+            <ResponsiveDropdownMenuItem
+              ref={themeItemRef}
+              onClick={toggleTheme}
+            >
+              <HugeiconsIcon
+                icon={isDark ? Sun03Icon : Moon02Icon}
+                className="size-4"
+              />
+              {isDark ? "Light mode" : "Dark mode"}
             </ResponsiveDropdownMenuItem>
             <ResponsiveDropdownMenuSeparator />
             <ResponsiveDropdownMenuItem
