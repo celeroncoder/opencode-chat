@@ -1,12 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { Geist, Geist_Mono, Oxanium, Figtree } from "next/font/google";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  Show,
-} from "@clerk/nextjs";
+import { ClerkProvider, SignInButton, SignUpButton, Show } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -19,10 +14,16 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/app-sidebar";
 
-const figtreeHeading = Figtree({ subsets: ["latin"], variable: "--font-heading" });
+const figtreeHeading = Figtree({
+  subsets: ["latin"],
+  variable: "--font-heading",
+});
 const oxanium = Oxanium({ subsets: ["latin"], variable: "--font-sans" });
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 const APP_NAME = "Opencode Chat";
 const APP_DESCRIPTION = "Opencode chat application";
@@ -85,9 +86,6 @@ export default async function RootLayout({
                   sessions={sessions.map((s) => ({ id: s.id, title: s.title }))}
                 />
                 <SidebarInset>
-                  <header className="flex items-center gap-2 p-2 sm:p-4">
-                    <SidebarTrigger />
-                  </header>
                   <main className="flex-1 flex flex-col min-h-0">
                     {children}
                   </main>

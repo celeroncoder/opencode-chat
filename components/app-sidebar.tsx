@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { PlusSignIcon, BubbleChatIcon } from "@hugeicons/core-free-icons";
+import { ChatAdd01Icon, Chat01Icon } from "@hugeicons/core-free-icons";
 
 import {
   Sidebar,
@@ -45,7 +45,7 @@ export function AppSidebar({ sessions }: { sessions: SidebarSession[] }) {
           size="sm"
         >
           <Link href="/" onClick={closeOnMobile}>
-            <HugeiconsIcon icon={PlusSignIcon} className="size-5 md:size-4" />
+            <HugeiconsIcon icon={ChatAdd01Icon} className="size-5 md:size-4" />
             New chat
           </Link>
         </Button>
@@ -73,7 +73,7 @@ export function AppSidebar({ sessions }: { sessions: SidebarSession[] }) {
                       >
                         <Link href={`/${s.id}`} onClick={closeOnMobile}>
                           <HugeiconsIcon
-                            icon={BubbleChatIcon}
+                            icon={Chat01Icon}
                             className="size-5 md:size-4 shrink-0"
                           />
                           <span className="truncate">
