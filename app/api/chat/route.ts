@@ -8,7 +8,15 @@ import {
   type UIMessage,
 } from "ai";
 import { eq } from "drizzle-orm";
+import { after } from "next/server";
 import * as z from "zod";
+
+import {
+  observe,
+  propagateAttributes,
+  setActiveTraceIO,
+} from "@langfuse/tracing";
+import { trace } from "@opentelemetry/api";
 
 import { getModel, DEFAULT_MODEL_ID, type ModelId } from "@/lib/ai";
 import { searchTool, scrapeTool } from "@/lib/tools";
@@ -19,10 +27,11 @@ import {
   loadSessionMessages,
   saveSingleMessage,
 } from "@/lib/chat/messages";
+import { langfuseSpanProcessor } from "@/instrumentation";
 
 export const maxDuration = 300;
 
-export async function POST(req: Request) {
+const handler = async (req: Request) => {
   const {
     message,
     model,
@@ -66,13 +75,22 @@ export async function POST(req: Request) {
     ? previous
     : [...previous, message];
 
-  if (isFirstUserMessage) {
-    const userText = (message.parts ?? [])
-      .filter((p): p is { type: "text"; text: string } => p.type === "text")
-      .map((p) => p.text)
-      .join("\n")
-      .trim();
+  const userText = (message.parts ?? [])
+    .filter((p): p is { type: "text"; text: string } => p.type === "text")
+    .map((p) => p.text)
+    .join("\n")
+    .trim();
 
+  setActiveTraceIO({ input: userText || message });
+
+  return propagateAttributes(
+    {
+      sessionId,
+      userId: authId,
+      tags: [`tenant:${tenantId}`],
+    },
+    async () => {
+  if (isFirstUserMessage) {
     if (userText) {
       void generateObject({
         model: getModel("deepseek-v4-flash"),
@@ -83,6 +101,10 @@ export async function POST(req: Request) {
             .describe("A concise 3-6 word title for this chat."),
         }),
         prompt: `Generate a concise, descriptive title (3-6 words, no quotes, no trailing punctuation) for a chat that starts with this user message. Respond as JSON matching the schema { "title": string }.\n\nUser message:\n${userText}`,
+        experimental_telemetry: {
+          isEnabled: true,
+          functionId: "generate-chat-title",
+        },
       })
         .then(async ({ object }) => {
           const title = object.title.trim().slice(0, 255);
@@ -106,6 +128,18 @@ export async function POST(req: Request) {
       scrape: scrapeTool,
     },
     stopWhen: stepCountIs(10),
+    experimental_telemetry: {
+      isEnabled: true,
+      functionId: "chat-response",
+    },
+    onFinish: ({ text }) => {
+      setActiveTraceIO({ output: text });
+      trace.getActiveSpan()?.end();
+    },
+    onError: (error) => {
+      setActiveTraceIO({ output: error });
+      trace.getActiveSpan()?.end();
+    },
   });
 
   const response = result.toUIMessageStreamResponse({
@@ -123,5 +157,16 @@ export async function POST(req: Request) {
 
   void result.consumeStream();
 
+  after(async () => {
+    await langfuseSpanProcessor.forceFlush();
+  });
+
   return response;
-}
+    },
+  );
+};
+
+export const POST = observe(handler, {
+  name: "handle-chat-message",
+  endOnExit: false,
+});
