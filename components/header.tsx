@@ -6,8 +6,18 @@ import { MenuTwoLineIcon } from "@hugeicons/core-free-icons";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
+function useOptionalSidebar() {
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useSidebar();
+  } catch {
+    return null;
+  }
+}
+
 export function Header({ className }: { className?: string }) {
-  const { toggleSidebar } = useSidebar();
+  const sidebar = useOptionalSidebar();
+  const toggleSidebar = sidebar?.toggleSidebar;
 
   return (
     <header
@@ -16,14 +26,16 @@ export function Header({ className }: { className?: string }) {
         className,
       )}
     >
-      <button
-        type="button"
-        onClick={toggleSidebar}
-        aria-label="Toggle Sidebar"
-        className="pointer-events-auto rounded-full border-2 border-border bg-muted/70 p-2 text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
-      >
-        <HugeiconsIcon icon={MenuTwoLineIcon} size={24} strokeWidth={2} />
-      </button>
+      {toggleSidebar && (
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label="Toggle Sidebar"
+          className="pointer-events-auto rounded-full border-2 border-border bg-muted/70 p-2 text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
+        >
+          <HugeiconsIcon icon={MenuTwoLineIcon} size={24} strokeWidth={2} />
+        </button>
+      )}
     </header>
   );
 }

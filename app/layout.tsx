@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarSwipeHandler } from "@/components/sidebar-swipe-handler";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TRPCReactProvider } from "@/trpc/client";
 import { HydrateClient, prefetch, trpc } from "@/trpc/server";
@@ -85,6 +86,7 @@ export default async function RootLayout({
                   </Show>
                   <Show when="signed-in">
                     <SidebarProvider>
+                      <SidebarSwipeHandler />
                       <AppSidebar />
                       <SidebarInset>
                         <div className="flex-1 flex flex-col min-h-0">
