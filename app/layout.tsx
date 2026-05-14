@@ -1,16 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { Geist, Geist_Mono, Oxanium, Figtree } from "next/font/google";
-import { ClerkProvider, SignInButton, SignUpButton, Show } from "@clerk/nextjs";
+import { ClerkProvider, Show } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { listSessions } from "@/lib/chat/sessions";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";

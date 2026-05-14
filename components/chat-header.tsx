@@ -26,7 +26,7 @@ export function ChatHeader({
   sessionId: string;
   className?: string;
 }) {
-  const router = useRouter();
+  const { push, refresh } = useRouter();
   const { toggleSidebar } = useSidebar();
 
   async function handleDelete() {
@@ -35,8 +35,8 @@ export function ChatHeader({
       method: "DELETE",
     });
     if (res.ok || res.status === 404) {
-      router.push("/");
-      router.refresh();
+      push("/");
+      refresh();
     }
   }
 
@@ -51,7 +51,7 @@ export function ChatHeader({
         type="button"
         onClick={toggleSidebar}
         aria-label="Toggle Sidebar"
-        className="pointer-events-auto px-2 py-2 text-muted-foreground transition-colors hover:text-foreground bg-muted/70 p-1 backdrop-blur-sm rounded-full border-2 border-border"
+        className="pointer-events-auto rounded-full border-2 border-border bg-muted/70 p-2 text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
       >
         <HugeiconsIcon icon={MenuTwoLineIcon} size={24} strokeWidth={2} />
       </button>

@@ -4,7 +4,7 @@ import { createAlibaba } from "@ai-sdk/alibaba";
 import type { LanguageModel } from "ai";
 
 import { env } from "./env";
-import { models, type ModelEntry, type ModelId } from "./models";
+import { models, type ModelId } from "./models";
 
 export { models, DEFAULT_MODEL_ID } from "./models";
 export type { ModelEntry, ModelId } from "./models";

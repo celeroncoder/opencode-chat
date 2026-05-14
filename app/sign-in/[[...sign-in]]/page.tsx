@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { SignIn } from "@clerk/nextjs";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  description: "Sign in to access your chat sessions.",
+};
 
 export default function Page() {
   return (

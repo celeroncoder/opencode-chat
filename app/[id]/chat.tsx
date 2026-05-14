@@ -39,7 +39,11 @@ type AnyPart = UIMessage["parts"][number] & Record<string, unknown>;
 
 type ToolPart = {
   type: string;
-  state?: "input-streaming" | "input-available" | "output-available" | "output-error";
+  state?:
+    | "input-streaming"
+    | "input-available"
+    | "output-available"
+    | "output-error";
   input?: unknown;
   output?: unknown;
 };
@@ -117,7 +121,9 @@ function ToolStep({ part }: { part: AnyPart & ToolPart }) {
         icon={isRunning ? LoaderIcon : isError ? SearchIcon : CheckIcon}
         label={
           isRunning ? (
-            <Shimmer duration={1.5}>{`Searching${query ? ` for "${query}"` : "…"}`}</Shimmer>
+            <Shimmer
+              duration={1.5}
+            >{`Searching${query ? ` for "${query}"` : "…"}`}</Shimmer>
           ) : (
             <span>
               Searched the web
@@ -131,8 +137,10 @@ function ToolStep({ part }: { part: AnyPart & ToolPart }) {
       >
         {results.length > 0 ? (
           <ChainOfThoughtSearchResults>
-            {results.map((r, i) => (
-              <ChainOfThoughtSearchResult key={i}>
+            {results.map((r) => (
+              <ChainOfThoughtSearchResult
+                key={`${r.url ?? "result"}-${r.title ?? "untitled"}`}
+              >
                 {r.url ? (
                   <a
                     href={r.url}
@@ -160,7 +168,9 @@ function ToolStep({ part }: { part: AnyPart & ToolPart }) {
         icon={isRunning ? LoaderIcon : GlobeIcon}
         label={
           isRunning ? (
-            <Shimmer duration={1.5}>{`Reading ${urls.length || ""} page${urls.length === 1 ? "" : "s"}…`}</Shimmer>
+            <Shimmer
+              duration={1.5}
+            >{`Reading ${urls.length || ""} page${urls.length === 1 ? "" : "s"}…`}</Shimmer>
           ) : (
             <span>
               Read {urls.length} page{urls.length === 1 ? "" : "s"}
@@ -171,13 +181,13 @@ function ToolStep({ part }: { part: AnyPart & ToolPart }) {
       >
         {urls.length > 0 ? (
           <ChainOfThoughtSearchResults>
-            {urls.slice(0, 6).map((u, i) => {
+            {urls.slice(0, 6).map((u) => {
               let label = u;
               try {
                 label = new URL(u).hostname.replace(/^www\./, "");
               } catch {}
               return (
-                <ChainOfThoughtSearchResult key={i}>
+                <ChainOfThoughtSearchResult key={u}>
                   <a
                     href={u}
                     target="_blank"
@@ -237,9 +247,17 @@ export function Chat({
   initialMessages: UIMessage[];
 }) {
   const [input, setInput] = useState("");
-  const [model, setModel] = useState<ModelId>(DEFAULT_MODEL_ID);
-  const modelRef = useRef(model);
-  modelRef.current = model;
+  const [model, setModel] = useState<ModelId>(() => {
+    if (typeof window === "undefined") return DEFAULT_MODEL_ID;
+    const raw = sessionStorage.getItem(`pending:${id}`);
+    if (!raw) return DEFAULT_MODEL_ID;
+    try {
+      const parsed = JSON.parse(raw) as { model?: ModelId };
+      return parsed.model ?? DEFAULT_MODEL_ID;
+    } catch {
+      return DEFAULT_MODEL_ID;
+    }
+  });
 
   const transport = useMemo(
     () =>
@@ -248,12 +266,12 @@ export function Chat({
         prepareSendMessagesRequest: ({ messages }) => ({
           body: {
             sessionId: id,
-            model: modelRef.current,
+            model,
             message: messages[messages.length - 1],
           },
         }),
       }),
-    [id],
+    [id, model],
   );
 
   const { messages, sendMessage, status } = useChat({
@@ -271,12 +289,9 @@ export function Chat({
     sentInitialRef.current = true;
     sessionStorage.removeItem(key);
     try {
-      const { text, model: initialModel } = JSON.parse(raw) as {
+      const { text } = JSON.parse(raw) as {
         text: string;
-        model?: ModelId;
       };
-      if (initialModel) setModel(initialModel);
-      modelRef.current = initialModel ?? modelRef.current;
       sendMessage({ text });
     } catch {
       sendMessage({ text: raw });
@@ -332,7 +347,9 @@ export function Chat({
                           <ChainOfThought key={gi} defaultOpen={anyRunning}>
                             <ChainOfThoughtHeader>
                               {anyRunning ? (
-                                <Shimmer duration={1.5}>{`Working through ${g.parts.length} step${g.parts.length === 1 ? "" : "s"}`}</Shimmer>
+                                <Shimmer
+                                  duration={1.5}
+                                >{`Working through ${g.parts.length} step${g.parts.length === 1 ? "" : "s"}`}</Shimmer>
                               ) : (
                                 <>
                                   Used {g.parts.length} tool

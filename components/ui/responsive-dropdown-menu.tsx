@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { use } from "react";
 import { Slot } from "radix-ui";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -31,7 +32,7 @@ const ResponsiveDropdownMenuContext =
   React.createContext<ResponsiveDropdownMenuContextValue | null>(null);
 
 function useResponsiveDropdownMenu() {
-  const context = React.useContext(ResponsiveDropdownMenuContext);
+  const context = use(ResponsiveDropdownMenuContext);
   if (!context) {
     throw new Error(
       "ResponsiveDropdownMenu components must be used within ResponsiveDropdownMenu",
@@ -89,7 +90,11 @@ function ResponsiveDropdownMenuTrigger(
   props: React.ComponentProps<typeof DropdownMenuTrigger>,
 ) {
   const { isDesktop } = useResponsiveDropdownMenu();
-  return isDesktop ? <DropdownMenuTrigger {...props} /> : <DrawerTrigger {...props} />;
+  return isDesktop ? (
+    <DropdownMenuTrigger {...props} />
+  ) : (
+    <DrawerTrigger {...props} />
+  );
 }
 
 function ResponsiveDropdownMenuContent({

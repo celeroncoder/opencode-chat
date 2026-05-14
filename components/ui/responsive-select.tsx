@@ -2,7 +2,9 @@
 
 import { Tick02Icon, UnfoldMoreIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useControllableState } from "@radix-ui/react-use-controllable-state";
 import * as React from "react";
+import { use } from "react";
 
 import {
   Drawer,
@@ -37,13 +39,18 @@ type Ctx = {
 const ResponsiveSelectContext = React.createContext<Ctx | null>(null);
 
 function useResponsiveSelect() {
-  const ctx = React.useContext(ResponsiveSelectContext);
+  const ctx = use(ResponsiveSelectContext);
   if (!ctx)
-    throw new Error("ResponsiveSelect components must be used inside ResponsiveSelect");
+    throw new Error(
+      "ResponsiveSelect components must be used inside ResponsiveSelect",
+    );
   return ctx;
 }
 
-const LabelMapContext = React.createContext<Map<string, React.ReactNode> | null>(null);
+const LabelMapContext = React.createContext<Map<
+  string,
+  React.ReactNode
+> | null>(null);
 
 function ResponsiveSelect({
   value,
@@ -65,26 +72,41 @@ function ResponsiveSelect({
   const isMobile = useIsMobile();
   const isDesktop = !isMobile;
 
-  const [internalValue, setInternalValue] = React.useState(defaultValue);
-  const isValueControlled = value !== undefined;
-  const currentValue = isValueControlled ? value : internalValue;
+  const [currentValue, setCurrentValue] = useControllableState<
+    string | undefined
+  >({
+    prop: value,
+    defaultProp: defaultValue,
+    onChange: (nextValue) => {
+      if (nextValue !== undefined) {
+        onValueChange?.(nextValue);
+      }
+    },
+  });
   const handleValueChange = (v: string) => {
-    if (!isValueControlled) setInternalValue(v);
-    onValueChange?.(v);
+    setCurrentValue(v);
   };
 
-  const [internalOpen, setInternalOpen] = React.useState(false);
-  const isOpenControlled = controlledOpen !== undefined;
-  const open = isOpenControlled ? controlledOpen : internalOpen;
-  const setOpen = (o: boolean) => {
-    if (!isOpenControlled) setInternalOpen(o);
-    onOpenChange?.(o);
-  };
+  const [open, setOpen] = useControllableState({
+    prop: controlledOpen,
+    defaultProp: false,
+    onChange: onOpenChange,
+  });
 
-  const labelMapRef = React.useRef(new Map<string, React.ReactNode>());
-  const register = React.useCallback((v: string, label: React.ReactNode) => {
-    labelMapRef.current.set(v, label);
-  }, []);
+  const [labelMap, setLabelMap] = React.useState<Map<string, React.ReactNode>>(
+    () => new Map()
+  );
+  const register = React.useCallback(
+    (v: string, label: React.ReactNode) => {
+      setLabelMap((prev) => {
+        if (prev.get(v) === label) return prev;
+        const next = new Map(prev);
+        next.set(v, label);
+        return next;
+      });
+    },
+    [],
+  );
 
   const ctx: Ctx = {
     isDesktop,
@@ -99,7 +121,7 @@ function ResponsiveSelect({
   if (isDesktop) {
     return (
       <ResponsiveSelectContext.Provider value={ctx}>
-        <LabelMapContext.Provider value={labelMapRef.current}>
+        <LabelMapContext.Provider value={labelMap}>
           <Select
             value={currentValue}
             onValueChange={handleValueChange}
@@ -116,7 +138,7 @@ function ResponsiveSelect({
 
   return (
     <ResponsiveSelectContext.Provider value={ctx}>
-      <LabelMapContext.Provider value={labelMapRef.current}>
+      <LabelMapContext.Provider value={labelMap}>
         <Drawer open={open} onOpenChange={setOpen}>
           {children}
         </Drawer>
@@ -170,9 +192,11 @@ function ResponsiveSelectValue({
   className?: string;
 } & React.ComponentProps<typeof SelectValue>) {
   const { isDesktop, value } = useResponsiveSelect();
-  const labelMap = React.useContext(LabelMapContext);
+  const labelMap = use(LabelMapContext);
   if (isDesktop) {
-    return <SelectValue placeholder={placeholder} className={className} {...props} />;
+    return (
+      <SelectValue placeholder={placeholder} className={className} {...props} />
+    );
   }
   const label = value ? labelMap?.get(value) : undefined;
   return (
@@ -238,7 +262,11 @@ function ResponsiveSelectGroup({
       </SelectGroup>
     );
   }
-  return <div className={cn("flex flex-col gap-0.5 py-1", className)}>{children}</div>;
+  return (
+    <div className={cn("flex flex-col gap-0.5 py-1", className)}>
+      {children}
+    </div>
+  );
 }
 
 function ResponsiveSelectLabel({
@@ -255,7 +283,12 @@ function ResponsiveSelectLabel({
     );
   }
   return (
-    <div className={cn("px-3 pt-2 pb-1 text-xs font-medium text-muted-foreground", className)}>
+    <div
+      className={cn(
+        "px-3 pt-2 pb-1 text-xs font-medium text-muted-foreground",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -268,8 +301,13 @@ function ResponsiveSelectItem({
   disabled,
   ...props
 }: React.ComponentProps<typeof SelectItem>) {
-  const { isDesktop, value: currentValue, onValueChange, setOpen, register } =
-    useResponsiveSelect();
+  const {
+    isDesktop,
+    value: currentValue,
+    onValueChange,
+    setOpen,
+    register,
+  } = useResponsiveSelect();
 
   React.useEffect(() => {
     register(value, children);
@@ -277,7 +315,12 @@ function ResponsiveSelectItem({
 
   if (isDesktop) {
     return (
-      <SelectItem value={value} disabled={disabled} className={className} {...props}>
+      <SelectItem
+        value={value}
+        disabled={disabled}
+        className={className}
+        {...props}
+      >
         {children}
       </SelectItem>
     );
@@ -299,7 +342,9 @@ function ResponsiveSelectItem({
       )}
     >
       <span className="flex-1 truncate">{children}</span>
-      {selected && <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="size-4" />}
+      {selected && (
+        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="size-4" />
+      )}
     </button>
   );
 }

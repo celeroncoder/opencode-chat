@@ -32,17 +32,21 @@ import { langfuseSpanProcessor } from "@/instrumentation";
 export const maxDuration = 300;
 
 const handler = async (req: Request) => {
-  const {
-    message,
-    model,
-    sessionId,
-  }: {
-    message: UIMessage;
-    model?: ModelId;
-    sessionId: string;
-  } = await req.json();
-
-  const { userId, orgId } = await auth();
+  const [
+    {
+      message,
+      model,
+      sessionId,
+    },
+    { userId, orgId },
+  ]: [
+    {
+      message: UIMessage;
+      model?: ModelId;
+      sessionId: string;
+    },
+    Awaited<ReturnType<typeof auth>>,
+  ] = await Promise.all([req.json(), auth()]);
   const authId = userId ?? "anonymous";
   const tenantId = orgId ?? "default";
   const nucleusId = authId;
@@ -63,8 +67,10 @@ const handler = async (req: Request) => {
   });
   const isFirstUserMessage = !previousBefore.some((m) => m.role === "user");
 
-  await saveSingleMessage(sessionId, message);
-  await deleteMessagesAfter(sessionId, message.id);
+  await Promise.all([
+    saveSingleMessage(sessionId, message),
+    deleteMessagesAfter(sessionId, message.id),
+  ]);
 
   const previous = await loadSessionMessages({
     sessionId,
@@ -75,11 +81,13 @@ const handler = async (req: Request) => {
     ? previous
     : [...previous, message];
 
-  const userText = (message.parts ?? [])
-    .filter((p): p is { type: "text"; text: string } => p.type === "text")
-    .map((p) => p.text)
-    .join("\n")
-    .trim();
+  let userText = "";
+  for (const part of message.parts ?? []) {
+    if (part.type === "text") {
+      userText += `${userText ? "\n" : ""}${part.text}`;
+    }
+  }
+  userText = userText.trim();
 
   setActiveTraceIO({ input: userText || message });
 

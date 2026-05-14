@@ -37,7 +37,6 @@ export interface PromptInputProps {
   busy?: boolean;
   disabled?: boolean;
   placeholder?: string;
-  autoFocus?: boolean;
   className?: string;
 }
 
@@ -50,7 +49,6 @@ export function PromptInput({
   busy = false,
   disabled = false,
   placeholder = "Ask anything…",
-  autoFocus,
   className,
 }: PromptInputProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -58,8 +56,7 @@ export function PromptInput({
   React.useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+    el.style.cssText = `height:auto;height:${Math.min(el.scrollHeight, 200)}px;`;
   }, [value]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -72,17 +69,10 @@ export function PromptInput({
   const canSubmit = value.trim().length > 0 && !busy && !disabled;
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (canSubmit) onSubmit();
-      }}
-      className={cn("w-full", className)}
-    >
+    <div className={cn("w-full", className)}>
       <div className="rounded-2xl border border-border bg-background shadow-sm focus-within:border-ring/60 focus-within:ring-2 focus-within:ring-ring/20 transition-colors">
         <textarea
           ref={textareaRef}
-          autoFocus={autoFocus}
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -119,11 +109,14 @@ export function PromptInput({
             </ResponsiveSelectContent>
           </ResponsiveSelect>
           <Button
-            type="submit"
+            type="button"
             size="icon"
             disabled={!canSubmit}
             className="size-7 rounded-full"
             aria-label="Send"
+            onClick={() => {
+              if (canSubmit) onSubmit();
+            }}
           >
             <HugeiconsIcon
               icon={busy ? Loading03Icon : ArrowUp02Icon}
@@ -132,6 +125,6 @@ export function PromptInput({
           </Button>
         </div>
       </div>
-    </form>
+    </div>
   );
 }

@@ -20,7 +20,7 @@ export function Header({ className }: { className?: string }) {
         type="button"
         onClick={toggleSidebar}
         aria-label="Toggle Sidebar"
-        className="pointer-events-auto rounded-full border-2 border-border bg-muted/70 p-1 px-2 py-2 text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
+        className="pointer-events-auto rounded-full border-2 border-border bg-muted/70 p-2 text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
       >
         <HugeiconsIcon icon={MenuTwoLineIcon} size={24} strokeWidth={2} />
       </button>
