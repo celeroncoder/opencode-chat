@@ -285,15 +285,20 @@ export function Chat({
     const raw = sessionStorage.getItem(key);
     if (!raw) return;
     sentInitialRef.current = true;
-    sessionStorage.removeItem(key);
+
+    let pending: { text: string; messageId?: string };
     try {
-      const { text } = JSON.parse(raw) as {
-        text: string;
-      };
-      sendMessage({ text });
+      pending = JSON.parse(raw) as { text: string; messageId?: string };
     } catch {
-      sendMessage({ text: raw });
+      pending = { text: raw };
     }
+
+    sessionStorage.removeItem(key);
+    sendMessage(
+      pending.messageId
+        ? { id: pending.messageId, role: "user", parts: [{ type: "text", text: pending.text }] }
+        : { text: pending.text },
+    );
   }, [id, sendMessage]);
 
   const busy = status === "streaming" || status === "submitted";

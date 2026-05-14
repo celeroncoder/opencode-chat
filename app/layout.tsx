@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { Geist, Geist_Mono, Oxanium, Figtree } from "next/font/google";
-import { ClerkProvider, Show } from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -102,10 +102,7 @@ export default async function RootLayout({
                 disableTransitionOnChange
               >
                 <TooltipProvider>
-                  <Show when="signed-out">
-                    {children}
-                  </Show>
-                  <Show when="signed-in">
+                  {userId ? (
                     <SidebarProvider>
                       <SidebarSwipeHandler />
                       <AppSidebar />
@@ -115,7 +112,9 @@ export default async function RootLayout({
                         </div>
                       </SidebarInset>
                     </SidebarProvider>
-                  </Show>
+                  ) : (
+                    children
+                  )}
                 </TooltipProvider>
               </ThemeProvider>
             </HydrateClient>
