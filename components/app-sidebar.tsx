@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ChatAdd01Icon, Chat01Icon } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +30,8 @@ export function AppSidebar() {
   const activeId = params?.id;
   const { setOpenMobile, isMobile } = useSidebar();
   const trpc = useTRPC();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const { data: sessions = [] } = useQuery({
     ...trpc.sessions.list.queryOptions(),
@@ -62,10 +65,10 @@ export function AppSidebar() {
           <SidebarGroupContent className="flex-1 min-h-0">
             <ScrollArea className="h-full pr-2">
               <SidebarMenu>
-                {sessions.length === 0 ? (
-                  <div className="px-2 py-4 text-sm md:text-xs text-muted-foreground">
-                    No chats yet.
-                  </div>
+                {!mounted || sessions.length === 0 ? (
+                  <li className="px-2 py-4 text-sm md:text-xs text-muted-foreground list-none">
+                    {mounted ? "No chats yet." : null}
+                  </li>
                 ) : (
                   sessions.map((s) => (
                     <SidebarMenuItem key={s.id}>
