@@ -67,7 +67,7 @@ export default async function RootLayout({
         figtreeHeading.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ServiceWorkerRegister />
         <ClerkProvider>
           <ThemeProvider
@@ -93,9 +93,9 @@ export default async function RootLayout({
                     }))}
                   />
                   <SidebarInset>
-                    <main className="flex-1 flex flex-col min-h-0">
+                    <div className="flex-1 flex flex-col min-h-0">
                       {children}
-                    </main>
+                    </div>
                   </SidebarInset>
                 </SidebarProvider>
               </Show>

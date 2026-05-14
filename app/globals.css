@@ -128,6 +128,21 @@
     @apply font-sans;
     font-size: clamp(1rem, 1vw, 1.75rem);
   }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: gray transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: gray;
+    border-radius: 9999px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
