@@ -222,16 +222,14 @@ type Group =
 function groupParts(parts: AnyPart[]): Group[] {
   const groups: Group[] = [];
   for (const p of parts) {
+    const last = groups.at(-1);
     if (p.type === "reasoning") {
-      const last = groups.at(-1);
       if (last?.kind === "reasoning") last.parts.push(p as never);
       else groups.push({ kind: "reasoning", parts: [p as never] });
     } else if (isToolPart(p)) {
-      const last = groups.at(-1);
       if (last?.kind === "tools") last.parts.push(p);
       else groups.push({ kind: "tools", parts: [p] });
     } else if (p.type === "text") {
-      const last = groups.at(-1);
       if (last?.kind === "text") last.parts.push(p as never);
       else groups.push({ kind: "text", parts: [p as never] });
     }

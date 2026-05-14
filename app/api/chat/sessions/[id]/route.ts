@@ -8,8 +8,9 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const [{ id }, { userId }] = await Promise.all([params, auth()]);
+  const { userId } = auth();
   if (!userId) return new Response("unauthorized", { status: 401 });
+  const { id } = await params;
 
   const owned = await db
     .select({ id: chatSessions.id })

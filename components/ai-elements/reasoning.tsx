@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { BrainIcon, ChevronDownIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
-import { createContext, memo, use, useEffect, useState } from "react";
+import { createContext, memo, use, useEffect, useRef, useState } from "react";
 import { Streamdown } from "streamdown";
 import { Shimmer } from "./shimmer";
 
@@ -57,19 +57,19 @@ export const Reasoning = memo(
     });
     const duration = durationProp;
 
-    const [hasAutoClosed, setHasAutoClosed] = useState(false);
+    const hasAutoClosed = useRef(false);
     // Auto-open when streaming starts, auto-close when streaming ends (once only)
     useEffect(() => {
-      if (defaultOpen && !isStreaming && isOpen && !hasAutoClosed) {
+      if (defaultOpen && !isStreaming && isOpen && !hasAutoClosed.current) {
         // Add a small delay before closing to allow user to see the content
         const timer = setTimeout(() => {
+          hasAutoClosed.current = true;
           setIsOpen(false);
-          setHasAutoClosed(true);
         }, AUTO_CLOSE_DELAY);
 
         return () => clearTimeout(timer);
       }
-    }, [isStreaming, isOpen, defaultOpen, setIsOpen, hasAutoClosed]);
+    }, [isStreaming, isOpen, defaultOpen, setIsOpen]);
 
     const handleOpenChange = (newOpen: boolean) => {
       setIsOpen(newOpen);
