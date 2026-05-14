@@ -3,6 +3,7 @@ import { createId } from "@paralleldrive/cuid2";
 import {
   convertToModelMessages,
   generateObject,
+  smoothStream,
   stepCountIs,
   streamText,
   type UIMessage,
@@ -67,10 +68,8 @@ const handler = async (req: Request) => {
   });
   const isFirstUserMessage = !previousBefore.some((m) => m.role === "user");
 
-  await Promise.all([
-    saveSingleMessage(sessionId, message),
-    deleteMessagesAfter(sessionId, message.id),
-  ]);
+  await saveSingleMessage(sessionId, message);
+  await deleteMessagesAfter(sessionId, message.id);
 
   const previous = await loadSessionMessages({
     sessionId,
@@ -135,6 +134,7 @@ const handler = async (req: Request) => {
       search: searchTool,
       scrape: scrapeTool,
     },
+    experimental_transform: smoothStream({ chunking: "word" }),
     stopWhen: stepCountIs(10),
     experimental_telemetry: {
       isEnabled: true,
