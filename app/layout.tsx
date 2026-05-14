@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { Geist, Geist_Mono, Oxanium, Figtree } from "next/font/google";
 import { ClerkProvider, Show } from "@clerk/nextjs";
@@ -45,6 +46,24 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const themeScript = `
+(() => {
+  try {
+    const theme = localStorage.getItem("theme") || "system";
+    const resolvedTheme =
+      theme === "system"
+        ? window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light"
+        : theme;
+
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(resolvedTheme);
+    document.documentElement.style.colorScheme = resolvedTheme;
+  } catch {}
+})();
+`;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -70,12 +89,14 @@ export default async function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <Script id="theme-script" strategy="beforeInteractive">
+          {themeScript}
+        </Script>
         <ServiceWorkerRegister />
         <ClerkProvider>
           <TRPCReactProvider>
             <HydrateClient>
               <ThemeProvider
-                attribute="class"
                 defaultTheme="system"
                 enableSystem
                 disableTransitionOnChange

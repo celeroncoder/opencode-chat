@@ -10,8 +10,8 @@ import {
   UserSettings01Icon,
 } from "@hugeicons/core-free-icons";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { startTransition, useRef } from "react";
+import { useTheme } from "@/components/theme-provider";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {

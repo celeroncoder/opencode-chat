@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ChatAdd01Icon, Chat01Icon } from "@hugeicons/core-free-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -30,8 +30,11 @@ export function AppSidebar() {
   const activeId = params?.id;
   const { setOpenMobile, isMobile } = useSidebar();
   const trpc = useTRPC();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   const { data: sessions = [] } = useQuery({
     ...trpc.sessions.list.queryOptions(),
