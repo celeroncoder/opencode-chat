@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ChatAdd01Icon, Chat01Icon } from "@hugeicons/core-free-icons";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 
 import {
   Sidebar,
@@ -22,15 +24,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { NavUser } from "@/components/nav-user";
 
-export type SidebarSession = {
-  id: string;
-  title: string | null;
-};
-
-export function AppSidebar({ sessions }: { sessions: SidebarSession[] }) {
+export function AppSidebar() {
   const params = useParams<{ id?: string }>();
   const activeId = params?.id;
   const { setOpenMobile, isMobile } = useSidebar();
+  const trpc = useTRPC();
+
+  const { data: sessions = [] } = useQuery({
+    ...trpc.sessions.list.queryOptions(),
+    refetchInterval: 10_000,
+    refetchOnWindowFocus: true,
+  });
 
   const closeOnMobile = () => {
     if (isMobile) setOpenMobile(false);

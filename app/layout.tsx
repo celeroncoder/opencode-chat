@@ -5,11 +5,12 @@ import { ClerkProvider, Show } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { listSessions } from "@/lib/chat/sessions";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TRPCReactProvider } from "@/trpc/client";
+import { HydrateClient, prefetch, trpc } from "@/trpc/server";
 
 const figtreeHeading = Figtree({
   subsets: ["latin"],
@@ -49,9 +50,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { userId } = await auth();
-  const sessions = userId
-    ? await listSessions({ nucleusId: userId, authId: userId })
-    : [];
+  if (userId) {
+    prefetch(trpc.sessions.list.queryOptions());
+  }
 
   return (
     <html
@@ -70,37 +71,32 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ServiceWorkerRegister />
         <ClerkProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <TooltipProvider>
-              <Show when="signed-out">
-                {/* <header className="flex items-center justify-end gap-2 p-4">
-                <SignInButton />
-                <SignUpButton />
-              </header> */}
-                {children}
-              </Show>
-              <Show when="signed-in">
-                <SidebarProvider>
-                  <AppSidebar
-                    sessions={sessions.map((s) => ({
-                      id: s.id,
-                      title: s.title,
-                    }))}
-                  />
-                  <SidebarInset>
-                    <div className="flex-1 flex flex-col min-h-0">
-                      {children}
-                    </div>
-                  </SidebarInset>
-                </SidebarProvider>
-              </Show>
-            </TooltipProvider>
-          </ThemeProvider>
+          <TRPCReactProvider>
+            <HydrateClient>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <TooltipProvider>
+                  <Show when="signed-out">
+                    {children}
+                  </Show>
+                  <Show when="signed-in">
+                    <SidebarProvider>
+                      <AppSidebar />
+                      <SidebarInset>
+                        <div className="flex-1 flex flex-col min-h-0">
+                          {children}
+                        </div>
+                      </SidebarInset>
+                    </SidebarProvider>
+                  </Show>
+                </TooltipProvider>
+              </ThemeProvider>
+            </HydrateClient>
+          </TRPCReactProvider>
         </ClerkProvider>
       </body>
     </html>
